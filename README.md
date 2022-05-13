@@ -15,6 +15,16 @@ $ ./edr-loadgen -command /bin/true -delay .005 -duration 30 $(pidof auditd; pido
 2021/10/20 16:43:04 SUM: 1.99 seconds / 6.633 percent
 ```
 
+A CSV report can be generated (`-report FILENAME`). It contains the following fields:
+- UNIX timestamp
+- number of events (per `-delay`, `-duration` parameters)
+- number of events actually generated
+- PID
+- process command line
+- utime, stime, sum (in jiffies)
+- utime, stime, sum (seconds)
+- utime, stime, sum (%CPU)
+
 ## Author
 
 Hilko Bengen <<bengen@hilluzination.de>>
