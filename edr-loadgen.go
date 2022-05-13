@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -52,6 +53,19 @@ func readStats(pids []uint64) (map[uint64]cpustat, error) {
 	return stats, nil
 }
 
+func getNames(pids []uint64) map[uint64]string {
+	pnames := make(map[uint64]string)
+	for _, pid := range pids {
+		if name, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid)); err != nil {
+			log.Printf("could not get cmdline for %d: %v", pid, err)
+			pnames[pid] = "<unk>"
+		} else {
+			pnames[pid] = strings.TrimSpace(strings.Replace(string(name), "\x00", " ", -1))
+		}
+	}
+	return pnames
+}
+
 func main() {
 	var (
 		cmd             string
@@ -81,6 +95,7 @@ func main() {
 		}
 		pids = append(pids, pid)
 	}
+	pnames := getNames(pids)
 
 	var counter uint64
 	t := time.NewTicker(time.Duration(delay * float64(time.Second)))
@@ -129,8 +144,8 @@ func main() {
 		utimePerc := 100 * utimeSec / duration
 		stimePerc := 100 * stimeSec / duration
 
-		log.Printf("PID %d: user+sys: %d+%d = %d ticks / %.02f+%.02f = %.02f seconds / %.3f+%.3f = %.03f percent",
-			pid, utime, stime, utime+stime,
+		log.Printf("PID %d[%s]: user+sys: %d+%d = %d ticks / %.02f+%.02f = %.02f seconds / %.3f+%.3f = %.03f percent",
+			pid, pnames[pid], utime, stime, utime+stime,
 			utimeSec, stimeSec, utimeSec+stimeSec,
 			utimePerc, stimePerc, utimePerc+stimePerc,
 		)
