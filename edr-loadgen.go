@@ -167,9 +167,10 @@ func main() {
 		if rw != nil {
 			if err := rw.Write([]string{
 				strconv.Itoa(int(now)),
-				strconv.FormatFloat(duration/delay, 'f', 2, 64),
+				strconv.Itoa(int(duration / delay)),
 				strconv.Itoa(int(counter)),
-				strconv.Itoa(int(pid)), pnames[pid],
+				strconv.Itoa(int(pid)),
+				pnames[pid],
 				strconv.Itoa(int(utime)),
 				strconv.Itoa(int(stime)),
 				strconv.Itoa(int(utime + stime)),
