@@ -85,6 +85,7 @@ func main() {
 	}
 	log.Printf("%s: exec '%s', every %.04f seconds, duration: %.04f seconds", os.Args[0], cmd, delay, duration)
 	log.Printf("CLK_TCK = %d", clk_tck)
+	cmdlist := strings.Split(cmd, " ")
 	if delay == .0 {
 		log.Fatal("delay cannot be 0")
 	}
@@ -116,9 +117,9 @@ func main() {
 	procs := make(chan *os.Process, 100000)
 
 	for i := 0; i < 32; i++ {
-		go func(cmd string, tick <-chan time.Time, procs chan *os.Process) {
+		go func(cmdlist []string, tick <-chan time.Time, procs chan *os.Process) {
 			for range tick {
-				p, err := os.StartProcess(cmd, []string{cmd}, &os.ProcAttr{})
+				p, err := os.StartProcess(cmdlist[0], cmdlist, &os.ProcAttr{})
 				if err != nil {
 					log.Fatalf("exec: %v", err)
 				}
@@ -126,7 +127,7 @@ func main() {
 				procs <- p
 				atomic.AddUint64(&counter, 1)
 			}
-		}(cmd, t.C, procs)
+		}(cmdlist, t.C, procs)
 		go func(procs chan *os.Process) {
 			for p := range procs {
 				p.Wait()
