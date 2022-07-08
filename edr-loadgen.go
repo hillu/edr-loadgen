@@ -191,5 +191,20 @@ func main() {
 	}
 	if len(pids) > 1 {
 		log.Printf("SUM: %.02f seconds / %.03f percent", sec, perc)
+		if rw != nil {
+			if err := rw.Write([]string{
+				strconv.Itoa(int(now)),
+				strconv.Itoa(int(duration / delay)),
+				strconv.Itoa(int(counter)),
+				"",
+				"SUM",
+				"", "", "", "", "",
+				strconv.FormatFloat(sec, 'f', 2, 64),
+				"", "",
+				strconv.FormatFloat(perc, 'f', 3, 64),
+			}); err != nil {
+				log.Printf("write report: %v", err)
+			}
+		}
 	}
 }
