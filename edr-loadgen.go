@@ -30,13 +30,16 @@ func readStats(pids []uint64) (map[uint64]cpustat, error) {
 }
 
 func main() {
+	if e := os.Getenv("EDR_LOADGEN"); e != "" {
+		os.Exit(0)
+	}
 	var (
 		cmd, report     string
 		delay, duration float64
 	)
 	var pids []uint64
 	var rw *csv.Writer
-	flag.StringVar(&cmd, "command", "/bin/true", "command to run")
+	flag.StringVar(&cmd, "command", os.Args[0], "command to run")
 	flag.Float64Var(&delay, "delay", .1, "delay between execs (in seconds)")
 	flag.Float64Var(&duration, "duration", 60, "total duration (in seconds)")
 	flag.StringVar(&report, "report", "", "report file (CSV)")
@@ -80,7 +83,8 @@ func main() {
 	for i := 0; i < 32; i++ {
 		go func(cmdlist []string, tick <-chan time.Time, procs chan *os.Process) {
 			for range tick {
-				p, err := os.StartProcess(cmdlist[0], cmdlist, &os.ProcAttr{})
+				p, err := os.StartProcess(cmdlist[0], cmdlist,
+					&os.ProcAttr{Env: []string{"EDR_LOADGEN", "1"}})
 				if err != nil {
 					log.Fatalf("exec: %v", err)
 				}

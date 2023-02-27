@@ -2,7 +2,7 @@
 
 The purpose of this tool is to measure CPU overhead incurred by having active or passive security monitoring technologies active on a Linux system. Examples are _auditd_, _auditbeat_, _auditd_+[_Laurel_](https://github.com/threathunters-io/laurel) Sysmon for Linux, or any EDR.
 
-The tool spawns trivial processes (`/bin/true`) at a set frequency for a set time and measures user + system CPU usage for a set of given processes.
+The tool spawns trivial processes at a set frequency for a set time and measures user + system CPU usage for a set of given processes. The process is passed a special environment variable, `EDR_LOADGEN=1`, so `edr-loadgen` can safely exec itself to generate load.
 
 Example:
 ```
