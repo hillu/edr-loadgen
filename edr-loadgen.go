@@ -70,7 +70,7 @@ func main() {
 	for _, arg := range flag.Args() {
 		pid, err := strconv.ParseUint(arg, 10, 64)
 		if err != nil {
-			log.Fatal("parse: %s: %v", arg, err)
+			log.Fatalf("parse: %s: %v", arg, err)
 		}
 		pids = append(pids, pid)
 	}
@@ -102,17 +102,17 @@ func main() {
 
 	before, err := readStats(pids)
 	if err != nil {
-		log.Fatal("read stats: %v", err)
+		log.Fatalf("read stats: %v", err)
 	}
 	time.Sleep(time.Duration(duration * float64(time.Second)))
 	after, err := readStats(pids)
 	if err != nil {
-		log.Fatal("read stats: %v", err)
+		log.Fatalf("read stats: %v", err)
 	}
 
 	t.Stop()
 	if err != nil {
-		log.Fatal("read stats: %v", err)
+		log.Fatalf("read stats: %v", err)
 	}
 	log.Printf("%d events generated.", counter)
 	var sec, perc float64
