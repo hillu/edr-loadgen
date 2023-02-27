@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"encoding/csv"
-	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -15,31 +12,9 @@ import (
 	"time"
 )
 
-// #include <unistd.h>
-import "C"
-
-var clk_tck = (uint64)(C.sysconf(C._SC_CLK_TCK))
-
 type cpustat struct {
-	utime uint64
-	stime uint64
-}
-
-func readStat(pid uint64) (*cpustat, error) {
-	// see proc(5)
-	buf, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
-	parts := bytes.Split(buf, []byte(" "))
-	if len(parts) < 15 {
-		return nil, errors.New("wrong data in stat")
-	}
-	var cs cpustat
-	if cs.utime, err = strconv.ParseUint(string(parts[13]), 10, 64); err != nil {
-		return nil, err
-	}
-	if cs.stime, err = strconv.ParseUint(string(parts[14]), 10, 64); err != nil {
-		return nil, err
-	}
-	return &cs, nil
+	utime float64
+	stime float64
 }
 
 func readStats(pids []uint64) (map[uint64]cpustat, error) {
@@ -52,19 +27,6 @@ func readStats(pids []uint64) (map[uint64]cpustat, error) {
 		stats[pid] = *cs
 	}
 	return stats, nil
-}
-
-func getNames(pids []uint64) map[uint64]string {
-	pnames := make(map[uint64]string)
-	for _, pid := range pids {
-		if name, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid)); err != nil {
-			log.Printf("could not get cmdline for %d: %v", pid, err)
-			pnames[pid] = "<unk>"
-		} else {
-			pnames[pid] = strings.TrimSpace(strings.Replace(string(name), "\x00", " ", -1))
-		}
-	}
-	return pnames
 }
 
 func main() {
@@ -84,7 +46,6 @@ func main() {
 		os.Exit(1)
 	}
 	log.Printf("%s: exec '%s', every %.04f seconds, duration: %.04f seconds", os.Args[0], cmd, delay, duration)
-	log.Printf("CLK_TCK = %d", clk_tck)
 	cmdlist := strings.Split(cmd, " ")
 	if delay == .0 {
 		log.Fatal("delay cannot be 0")
@@ -155,14 +116,11 @@ func main() {
 	for _, pid := range pids {
 		utime := after[pid].utime - before[pid].utime
 		stime := after[pid].stime - before[pid].stime
-		utimeSec := float64(utime) / float64(clk_tck)
-		stimeSec := float64(stime) / float64(clk_tck)
-		utimePerc := 100 * utimeSec / duration
-		stimePerc := 100 * stimeSec / duration
+		utimePerc := 100 * utime / duration
+		stimePerc := 100 * stime / duration
 
-		log.Printf("PID %d[%s]: user+sys: %d+%d = %d ticks / %.02f+%.02f = %.02f seconds / %.3f+%.3f = %.03f percent",
+		log.Printf("PID %d[%s]: %.02f+%.02f = %.02f seconds / %.3f+%.3f = %.03f percent",
 			pid, pnames[pid], utime, stime, utime+stime,
-			utimeSec, stimeSec, utimeSec+stimeSec,
 			utimePerc, stimePerc, utimePerc+stimePerc,
 		)
 		if rw != nil {
@@ -172,12 +130,9 @@ func main() {
 				strconv.Itoa(int(counter)),
 				strconv.Itoa(int(pid)),
 				pnames[pid],
-				strconv.Itoa(int(utime)),
-				strconv.Itoa(int(stime)),
-				strconv.Itoa(int(utime + stime)),
-				strconv.FormatFloat(utimeSec, 'f', 2, 64),
-				strconv.FormatFloat(stimeSec, 'f', 2, 64),
-				strconv.FormatFloat(utimeSec+stimeSec, 'f', 2, 64),
+				strconv.FormatFloat(utime, 'f', 2, 64),
+				strconv.FormatFloat(stime, 'f', 2, 64),
+				strconv.FormatFloat(utime+stime, 'f', 2, 64),
 				strconv.FormatFloat(utimePerc, 'f', 3, 64),
 				strconv.FormatFloat(stimePerc, 'f', 3, 64),
 				strconv.FormatFloat(utimePerc+stimePerc, 'f', 3, 64),
@@ -186,7 +141,7 @@ func main() {
 			}
 		}
 
-		sec += utimeSec + stimeSec
+		sec += utime + stime
 		perc += utimePerc + stimePerc
 	}
 	if len(pids) > 1 {
@@ -198,7 +153,7 @@ func main() {
 				strconv.Itoa(int(counter)),
 				"",
 				"SUM",
-				"", "", "", "", "",
+				"", "",
 				strconv.FormatFloat(sec, 'f', 2, 64),
 				"", "",
 				strconv.FormatFloat(perc, 'f', 3, 64),

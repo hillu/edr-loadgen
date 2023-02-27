@@ -10,8 +10,8 @@ $ ./edr-loadgen -command /bin/true -delay .005 -duration 30 $(pidof auditd; pido
 2021/10/20 16:42:34 ./edr-loadgen: exec '/bin/true', every 0.0050 seconds, duration: 30.0000 seconds
 2021/10/20 16:42:34 CLK_TCK = 100
 2021/10/20 16:43:04 5977 events generated.
-2021/10/20 16:43:04 PID 8062: user+sys: 43+70 = 113 ticks / 0.43+0.70 = 1.13 seconds / 1.433+2.333 = 3.767 percent
-2021/10/20 16:43:04 PID 18249: user+sys: 78+8 = 86 ticks / 0.78+0.08 = 0.86 seconds / 2.600+0.267 = 2.867 percent
+2021/10/20 16:43:04 PID 8062: user+sys: 0.43+0.70 = 1.13 seconds / 1.433+2.333 = 3.767 percent
+2021/10/20 16:43:04 PID 18249: user+sys: 0.78+0.08 = 0.86 seconds / 2.600+0.267 = 2.867 percent
 2021/10/20 16:43:04 SUM: 1.99 seconds / 6.633 percent
 ```
 
@@ -21,7 +21,6 @@ A CSV report can be generated (`-report FILENAME`). It contains the following fi
 - number of events actually generated
 - PID
 - process command line
-- utime, stime, sum (in jiffies)
 - utime, stime, sum (seconds)
 - utime, stime, sum (%CPU)
 
