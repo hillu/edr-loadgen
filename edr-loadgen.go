@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 )
 
@@ -84,7 +85,11 @@ func main() {
 		go func(cmdlist []string, tick <-chan time.Time, procs chan *os.Process) {
 			for range tick {
 				p, err := os.StartProcess(cmdlist[0], cmdlist,
-					&os.ProcAttr{Env: []string{"EDR_LOADGEN", "1"}})
+					&os.ProcAttr{
+						Env:   []string{"EDR_LOADGEN=1"},
+						Files: []*os.File{nil, nil, nil},
+						Sys:   &syscall.SysProcAttr{},
+					})
 				if err != nil {
 					log.Fatalf("exec: %v", err)
 				}
