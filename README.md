@@ -1,8 +1,10 @@
 # Simple load generator for stress-testing EDR software
 
-The purpose of this tool is to measure CPU overhead incurred by having active or passive security monitoring technologies active on a Linux system. Examples are _auditd_, _auditbeat_, _auditd_+[_Laurel_](https://github.com/threathunters-io/laurel) Sysmon for Linux, or any EDR.
+The purpose of this tool is to measure CPU overhead incurred by having active or passive security monitoring technologies. Examples are _auditd_, _auditbeat_, _auditd_+[_Laurel_](https://github.com/threathunters-io/laurel) Sysmon for Linux, or any EDR.
 
-The tool spawns trivial processes at a set frequency for a set time and measures user + system CPU usage for a set of given processes. The process is passed a special environment variable, `EDR_LOADGEN=1`, so `edr-loadgen` can safely exec itself to generate load.
+Originally written for use on Linux systems, _edr-loadgen_ also supports CPU overhead measurements on Windows.
+
+It spawns trivial processes at a set frequency for a set time and measures user + system CPU usage for a set of given processes. The process is passed a special environment variable, `EDR_LOADGEN=1`, so _edr-loadgen_ can safely exec itself to generate load.
 
 Example:
 ```
@@ -21,8 +23,8 @@ A CSV report can be generated (`-report FILENAME`). It contains the following fi
 - number of events actually generated
 - PID
 - process command line
-- utime, stime, sum (seconds)
-- utime, stime, sum (%CPU)
+- user time, system (kernel) time, sum (seconds)
+- user time, system (kernel) time, sum (%CPU)
 
 ## Author
 
