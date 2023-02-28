@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"syscall"
 
 	"github.com/elastic/go-windows"
@@ -9,12 +10,12 @@ import (
 func readStat(pid uint64) (*cpustat, error) {
 	h, err := syscall.OpenProcess(syscall.PROCESS_QUERY_INFORMATION, false, uint32(pid))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("OpenProcess: %d: %v", pid, err)
 	}
 	defer syscall.CloseHandle(h)
-	var userTime, kernelTime syscall.Filetime
-	if err := syscall.GetProcessTimes(h, nil, nil, &kernelTime, &userTime); err != nil {
-		return nil, err
+	var userTime, kernelTime, dummy syscall.Filetime
+	if err := syscall.GetProcessTimes(h, &dummy, &dummy, &kernelTime, &userTime); err != nil {
+		return nil, fmt.Errorf("GetProcessTimes: %d: %v", pid, err)
 	}
 	return &cpustat{
 		utime: float64(userTime.Nanoseconds()) / 1000000000,
